@@ -24,43 +24,56 @@
 //börja med väggar
 
 //skapa objekt
+//spara alla koordinater, enkelt sätt att bygga mappen
+const map = [
+    [200, 0, 50, 300],
+    [500, totalHeight-300, 50, 300],
+    [500, totalHeight-300, 300, 50],
+    [750, 0, 50, 100],
+    [0, 0, totalWidth, 50],
+    [0, 0, 50, totalHeight],
+    [0, totalHeight-50, totalWidth, 50],
+    [totalWidth-50, 0, 50, totalHeight],
+    [500, 200, 50, 300],
+    [500, 250, 300, 50],
+    [800, 250, 50, 500],
+    [800, 500, 200, 50],
+    [totalWidth-200, 500, 200, 50]
+];
+
+const triggerPoints = [
+    [50, totalHeight-300, 450, 20],
+    [500, totalHeight-450, 20, 150],
+    [200, 300, 20, 400],
+    [500, 50, 20, 150]
+];
+
+const zombieSpawnPoints = [
+    [100, 200],
+    [800, 200],
+    [totalWidth-200, 100],
+    [900, 100]
+];
+
 var zombies = [];
-var color = "green";
 
 var score = 0;
 var level = 0;
 var playerSpeed = 5;
 
-
-for (let i = 0; i < 0; i++) {
-    zombies.push({
-        x: random(totalWidth),
-        y: random(totalHeight),
-        speed: random(1, 3),
-        health: 5
-    });
-}
-
 var players = [];
 
 for (let i = 0; i < 2; i++) {
     players.push({
-        x: totalWidth / 2,
-        y: totalHeight / 2,
+        x: 250,
+        y: totalHeight - 200,
         health: 20
     });
 }
 
 const alive = [players[0], players[1]];
+
 const projectile = [];
-const coins = [];
-for(let i = 0; i < 5; i++){
-        coins.push({
-        x: random(50, totalWidth-120),
-        y: random(50, totalHeight-150),
-        color: "yellow" 
-    });
-}
 
 var healthBar = []; //healthbar för två spelare
 
@@ -72,6 +85,22 @@ healthBar.push({
     x: 250,
     y: 0
 });
+
+//hitboxes med bredd och höjd
+const playerHitBox = [];
+const zombieHitBox = [];
+const coinHitBox = [];
+for(let i = 0; i < players.length; i++){
+    playerHitBox.push([55, 55]);
+}
+
+for(let i = 0; i < zombies.length; i++){
+    zombieHitBox.push([20, 200]);
+}
+
+for(let i = 0; i < 8; i++){
+    coinHitBox.push([random(50, totalWidth-120), random(50, totalHeight-150), 35, 35]);
+}
 
 
 //spara highscore i local storage
@@ -93,17 +122,44 @@ function update() {
     //level display
     text(500, 70, 20, "SCORE: " + score, "red");
 
+    rectangle(300, 400, playerHitBox[0][0], playerHitBox[0][1], "red");
+
     //splare och spelar movement
     CreateMap();
     CreatePlayer(0);
     CreatePlayer(1);
 
+    SpawnZombies();
+    if(mouse.left){
+        console.table(coinHitBox);
+    }
+
+    if(CollisionDetection(players[0], playerHitBox, coinHitBox) != -1){
+        console.log ( "picked up coin!");
+        let index = CollisionDetection(players[0], playerHitBox, coinHitBox);
+        coinHitBox[index].splice(0, 4);
+        score++;
+    }
 
     //loop för zombies
     for (let i = 0; i < zombies.length; i++) {
         var zombie = zombies[i];
 
-        picture(zombie.x, zombie.y, "img/police.png");
+        if(zombie.health == 5){
+            picture(zombie.x, zombie.y, "img/Zombie5.png");
+        } else if(zombie.health == 4){
+            picture(zombie.x, zombie.y, "img/Zombie4.png");
+        }else if(zombie.health == 3){
+            picture(zombie.x, zombie.y, "img/Zombie3.png");
+        }else if(zombie.health == 2){
+            picture(zombie.x, zombie.y, "img/Zombie2.png");
+        }else if(zombie.health == 2){
+            picture(zombie.x, zombie.y, "img/Zombie2.png");
+        }else if(zombie.health == 1){
+            picture(zombie.x, zombie.y, "img/Zombie1.png");
+        } else {
+            picture(zombie.x, zombie.y, "img/Zombie.png");
+        }
 
         var nearestPlayer = [];
         //hitta närmaste spelare
@@ -157,28 +213,21 @@ function update() {
     } //slut på zombie loop
 }
 
-//spara alla koordinater
-const map = [
-    [200, 0, 50, 300],
-    [500, totalHeight-300, 50, 300],
-    [500, totalHeight-300, 300, 50],
-    [750, 0, 50, 100]
-];
-
 function CreateMap(){
-    let topBorder = rectangle(0, 0, totalWidth, 50, "black");
-    let leftBorder = rectangle(0, 0, 50, totalHeight, "black");
-    let bottomBorder = rectangle(0, totalHeight-50, totalWidth, 50, "black");
-    let rightBorder = rectangle(totalWidth-50, 0, 50, totalHeight, "black");
 
     //visualisera map
     for(let i = 0; i < map.length; i++){
-        rectangle(map[i][0], map[i][1], map[i][2], map[i][3], "red");
+        rectangle(map[i][0], map[i][1], map[i][2], map[i][3], "black");
+    }
+
+    //visualisera trigger points
+    for(let i = 0; i < triggerPoints.length; i++){
+        rectangle(triggerPoints[i][0], triggerPoints[i][1], triggerPoints[i][2], triggerPoints[i][3], "green");
     }
 
     //placera ut coins
-    for(let i = 0; i < coins.length; i++){
-        circle(coins[i].x, coins[i].y, 20, color);
+    for(let i = 0; i < coinHitBox.length; i++){
+        circle(coinHitBox[i][0], coinHitBox[i][1], 20, "yellow");
     }
 }
 
@@ -187,23 +236,36 @@ function CreatePlayer(playerIndex) {
     Movement(playerIndex);
     Health(playerIndex);
 
-    if (playerIndex == 0) { // spelare 1
-        if (players[playerIndex].health > 0) {
-            var player = picture(players[playerIndex].x, players[playerIndex].y, "img/playeroneLevel2.png");
+        if (players[0].health >= 16) {
+            var player = picture(players[0].x, players[0].y, "img/Player1(5).png");
+        } else if (players[0].health >= 12){
+            var player = picture(players[0].x, players[0].y, "img/Player1(4).png");
+        } else if (players[0].health >= 8){
+            var player = picture(players[0].x, players[0].y, "img/Player1(3).png");
+        } else if (players[0].health >= 4){
+            var player = picture(players[0].x, players[0].y, "img/Player1(2).png");
+        } else if (players[0].health > 0){
+            var player = picture(players[0].x, players[0].y, "img/Player1(1).png");
         }
 
-    } else { //spelare 2
-        if (players[playerIndex].health > 0) {
-            var player = picture(players[playerIndex].x, players[playerIndex].y, "img/playeroneLevel1.png");
+        if (players[1].health >= 16) {
+            var player = picture(players[1].x, players[1].y, "img/Player2(5).png");
+        } else if (players[1].health >= 12){
+            var player = picture(players[1].x, players[1].y, "img/Player2(4).png");
+        } else if (players[1].health >= 8){
+            var player = picture(players[1].x, players[1].y, "img/Player2(3).png");
+        } else if (players[1].health >= 4){
+            var player = picture(players[1].x, players[1].y, "img/Player2(2).png");
+        } else if (players[1].health > 0){
+            var player = picture(players[1].x, players[1].y, "img/Player2(1).png");
         }
-    }
 
-        for(let t = 0; t < coins.length; t++){
-            if(distance(players[0].x, players[0].y, coins[t].x, coins[t].y) < 10 || distance(players[1].x, players[1].y, coins[t].x, coins[t].y) < 10){
-                coins.splice(t, 1);
-                score++;
-            }
-        }
+        // for(let t = 0; t < coins.length; t++){
+        //     // if(distance(players[0].x, players[0].y, coins[t].x, coins[t].y) < 10 || distance(players[1].x, players[1].y, coins[t].x, coins[t].y) < 10){
+        //     //     coins.splice(t, 1);
+        //     //     score++;
+        //     // }
+        // }
 }
 
 //zombie attack (ska senare spawna t.ex mellan 1- 3 zombies när man är på visst x / y)
@@ -213,33 +275,49 @@ function AttackPlayer(player, zombie) {
 
         if (zombie.x < player.x) {
             zombie.x += zombie.speed;
+            if(CollisionDetection(zombie, zombieHitBox, map) != -1){
+                zombie.x -= 10;
+            }
         } else {
             zombie.x -= zombie.speed;
+            if(CollisionDetection(zombie, zombieHitBox, map) != -1){
+                zombie.x += 10;
+            }
         }
         if (zombie.y < player.y) {
             zombie.y += zombie.speed;
+            if(CollisionDetection(zombie, zombieHitBox, map) != -1){
+                zombie.y -= 10;
+            }
         } else {
             zombie.y -= zombie.speed;
+            if(CollisionDetection(zombie, zombieHitBox, map) != -1){
+                zombie.y += 10;
+            }
         }
     }
 }
-
+var shooter; //intervall som startar projectile funktionen
 function AttackZombie(zombie) {
+
     projectile.push({
         x: players[0].x,
         y: players[0].y,
-        time: 100
+        width: 10,
+        height: 10,
+        time: 100,
+        color: "black"
     });
 
     //du kan bara skjuta en åt gången
-    if (projectile.length <= 1) {
+    if (projectile.length == 1) {
 
         //variabler för att inte projektilen ska byta håll
         var X;
         var Y;
 
-        //sida sida
-        if(projectile[0].x < mouse.x){
+    //sida sida
+    if(projectile[0].x < mouse.x){
         X = 1;
     } else if (projectile[0].x > mouse.x){
         X = -1;
@@ -260,131 +338,146 @@ function AttackZombie(zombie) {
         X = 0;
     }
 
-        var shooter = setInterval(function() {
+        shooter = setInterval(function() {
             Projectile(X, Y);
-        }, 1);
+        }, 1); //kalla på projectile funktionen
+
         setTimeout(function() {
             clearTimeout(shooter);
-            projectile.splice(0);
-        }, 1000); //ta bort projektilen om 1sekund
+            if(projectile.length > 0){ //om projektilen inte redan är borta
+                projectile.splice(0);
+            }
+        }, 1000); //ta bort projektilen och stäng av shooter intervallet om 1sekund
     }
 }
 
 //bestämmer åt vilket håll projektilen ska skjuta
 function Projectile(X, Y) {
+    if(projectile.length > 0){
+        projectile[0].x += X;
+        projectile[0].y += Y;
 
-    projectile[0].x += X;
-    projectile[0].y += Y;
-
-    var shot = rectangle(projectile[0].x, projectile[0].y, 10, 10, "black");
+    var shot = rectangle(projectile[0].x, projectile[0].y, projectile[0].width, projectile[0].height, projectile[0].color);
 
     //om projektilen är tillräckligt nära zombien -> ta skada
     for (let i = 0; i < zombies.length; i++) {
 
-        if (distance(projectile[0].x, projectile[0].y, zombies[i].x, zombies[i].y) < 15 && zombies[i].health > 0) {
+        if (distance(projectile[0].x, projectile[0].y, zombies[i].x, zombies[i].y) < 25 && zombies[i].health > 0) {
             zombies[i].health--;
-            console.log(zombies[i].health + " health");
+                
             if(zombies[i].health == 0){
-                score++;
-                zombies.splice(i, 1);
+            score++;
+            zombies.splice(i, 1);
             }
+
+            if(projectile.length > 0){
+                clearTimeout(shooter);
+                projectile.splice(0); //ta bort projektiler
+            }
+
+            break; //om zombie är träffad, upprepa inte loopen (skottet träffar endast en zombie åt gången)
         }
     }
-}
+    }
 
-//kollar om spelare har tillåtelse att röra sig åt olika håll
-const move = [];
-const move1 = [];
+}
 
 function Movement(playerIndex) {
-
-
-move1.push([players[0], true, true, true, true]);
-console.log(move1[players[0]].left);
-move1[0][0] = false;
-console.table(move1);
-
-for(let i = 0; i < players.length; i++){   
-
-    //om spelaren kan röra sig åt vänster/höger, ej stoppad av border
-    move.push({
-    player: players[i],
-    left : true,
-    right :  true,
-    up : true,
-    down : true
-    });
-
-//walls
-    if(players[i].x < 50){
-        move[i].left = false;
-    } 
-    if(players[i].y < 50){
-        move[i].up = false;
-    } 
-    if(players[i].x + 120 > totalWidth){
-        move[i].right = false;
-    } 
-    if(players[i].y + 150 > totalHeight){
-        move[i].down = false;
-    }
-}
     //w a s d knappar för spelare 0
     if (playerIndex == 0) {
-        CollisionDetection(players[0]);
-        let direction;
-if (keyboard.d && move[0].right) {
+if (keyboard.d) {
     players[playerIndex].x += playerSpeed;
-    direction = "right";
+    if(CollisionDetection(players[0], playerHitBox, map) != -1){
+        players[0].x -= 10;
+    }
 }
-if (keyboard.a && move[0].left) {
+if (keyboard.a) {
     players[playerIndex].x -= playerSpeed;
-    direction = "left";
+    if(CollisionDetection(players[0], playerHitBox, map) != -1){
+        players[0].x += 10;
+    }
 }
-if (keyboard.w && move[0].up) {
+if (keyboard.w) {
     players[playerIndex].y -= playerSpeed;
-    direction = "up";
-
+    if(CollisionDetection(players[0], playerHitBox, map) != -1){
+        players[0].y += 10;
+    }
 }
-if (keyboard.s && move[0].down) {
+if (keyboard.s) {
     players[playerIndex].y += playerSpeed;
-    direction = "down";
-}
-
-if(collisionDetection.includes(players[0])){
-    move[0].direction = false;
+    if(CollisionDetection(players[0], playerHitBox, map) != -1){
+        players[0].y -= 10;
+    }
 }
 
 //piltangenter för spelare 1
 } else {
-if (keyboard.right && move[1].right) {
+if (keyboard.right) {
     players[playerIndex].x += playerSpeed;
+    if(CollisionDetection(players[1], playerHitBox, map) != -1){
+        players[1].x -= 10;
+    }
 }
-if (keyboard.left && move[1].left) {
+if (keyboard.left) {
     players[playerIndex].x -= playerSpeed;
+    if(CollisionDetection(players[1], playerHitBox, map) != -1){
+        players[1].x += 10;
+    }
 }
-if (keyboard.up && move[1].up) {
+if (keyboard.up) {
     players[playerIndex].y -= playerSpeed;
+    if(CollisionDetection(players[1], playerHitBox, map) != -1){
+        players[1].y += 10;
+    }
 }
-if (keyboard.down && move[1].down) {
+if (keyboard.down) {
     players[playerIndex].y += playerSpeed;
+    if(CollisionDetection(players[1], playerHitBox, map) != -1){
+        players[1].y -= 10;
+    }
 }
 }
 }
-const collisionDetection = [];
 
-function CollisionDetection(object){
-    circle(players[0].x, players[0].y, 10, "red");
-    circle(players[1].x, players[1].y, 10, "blue");
-        for(let m = 0; m < map.length; m++){
-            if(object.x >= map[m][0] && object.x <= (map[m][0] + map[m][2]) && object.y > map[m][1] && object.y < (map[m][1] + map[m][3])) {
-                console.log("collision");
-                if(!collisionDetection.includes(object)){
-                    console.log("tetetette");
-                    collisionDetection.push(object);
-                }
+function SpawnZombies(){
+    for(let i = 0; i < players.length; i++){
+        if(CollisionDetection(players[i], playerHitBox, triggerPoints) != -1){
+            console.log("stepped on triggerpoint");
+            let index = CollisionDetection(players[i], playerHitBox, triggerPoints);
+        for (let s = 0; s < 0; s++) {
+            zombies.push({
+            x: zombieSpawnPoints[index][0],
+            y: zombieSpawnPoints[index][1],
+            speed: random(1, 3),
+            health: 5
+            });
+        }
+        triggerPoints[index].splice(0, 4); // ta bort triggerpointen
+        zombieSpawnPoints[index].splice(0, 4); //zombie spawn point och triggerpoint använder samma index ordning
+            break;
+        }
+    }
+}
+
+function CollisionDetection(object, hitbox, map){
+    circle(players[0].x, players[0].y, 10, "red"); // ta bort sen
+    circle(players[1].x, players[1].y, 10, "blue"); // ta bort sen
+// 0 -> 1 -> 2 -> 3
+    for(let m = 0; m < map.length; m++){
+        for(let h = 0; h < hitbox.length; h++){
+        //om spelaren är innanför arean
+        //object.x >= map[m][0] && object.x <= (map[m][0] + map[m][2]) && object.y >= map[m][1] && object.y <= (map[m][1] + map[m][3])
+        if(((object.x + hitbox[h][0]) >= map[m][0]) && 
+            (object.x <= (map[m][0] + map[m][2])) &&
+            ((object.y + hitbox[h][1]) >= map[m][1]) && 
+            (object.y <= (map[m][1] + map[m][3]))) {
+               console.log("collision");
+                return m; //returnerar index på objektet den rör vid
             }
         }
+    }
+    //spelaren rör inte vid en vägg
+    return -1;
 }
 
 function Health(playerIndex) {
