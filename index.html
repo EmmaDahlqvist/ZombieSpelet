@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="css/style.css">
+    <title>Zombiespelet</title>
+</head>
+<body class="homepage">
+    <div class="outer-container">
+        <div class="header">
+            <h1>THE ESCAPIST</h1>
+        </div>
+        <div class="container">
+            <div class="menu">
+                <a class="button" href="game.html" >Starta spel</a>
+                <div class="button" onclick="toggleHighscore()" title="click to toggle">Highscore
+                    <div id="toggleHighscore">
+                        <h1>Highscore:</h1>
+                        <p id="highscore1">-</p>
+                        <p id="highscore2">-</p>
+                        <p id="highscore3">-</p>
+                        <p id="highscore4">-</p>
+                        <p id="highscore5">-</p>
+                        <div class="button" title="click to toggle">Highscore</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    function toggleHighscore(){
+        var element = document.getElementById("toggleHighscore");
+        if(element.style.display === "none"){
+            element.style.display = "flex";
+        } else {
+            element.style.display = "none";
+        }
+
+        document.getElementById("highscore1").innerHTML = "1: " + localStorage.highscore0;
+        document.getElementById("highscore2").innerHTML = "2: " + localStorage.highscore1;
+        document.getElementById("highscore3").innerHTML = "3: " + localStorage.highscore2;
+        document.getElementById("highscore4").innerHTML = "4: " + localStorage.highscore3;
+        document.getElementById("highscore5").innerHTML = "5: " + localStorage.highscore4;
+    }
+
+    </script>
+</body>
+</html>
