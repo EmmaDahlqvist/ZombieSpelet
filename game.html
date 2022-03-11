@@ -49,9 +49,9 @@ const triggerPoints = [
 ];
 
 const zombieSpawnPoints = [
+    [300, 200],
+    [550, 100],
     [100, 200],
-    [800, 200],
-    [totalWidth-200, 100],
     [900, 100],
     [totalWidth-650, totalHeight-150]
 ];
@@ -76,7 +76,7 @@ var players = [];
 
 for (let i = 0; i < 2; i++) {
     players.push({
-        x: 250,
+        x: 200,
         y: totalHeight - 150,
         health: 20
     });
@@ -85,6 +85,14 @@ for (let i = 0; i < 2; i++) {
 const alive = [players[0], players[1]];
 
 const projectile = [];
+projectile.push({
+        x: players[0].x,
+        y: players[0].y,
+        width: 10,
+        height: 10,
+        time: 100,
+        color: "black"
+    });
 
 var healthBar = []; //healthbar för två spelare
 
@@ -101,6 +109,7 @@ healthBar.push({
 const playerHitBox = [];
 const zombieHitBox = [];
 const coinHitBox = [];
+const projectileHitBox = [[projectile[0].x, projectile[0].y, 10, 10]];
 for(let i = 0; i < players.length; i++){
     playerHitBox.push([55, 55]);
 }
@@ -138,6 +147,7 @@ function update() {
         text(500, 95, 20, "POWERUP ENABLED", "yellow");
     }
 
+    playSound("gamesound.mp3",1);
     //splare och spelar movement
     CreateMap();
     CreatePlayer(0);
@@ -190,6 +200,7 @@ function update() {
         }
 
         if (mouse.left) {
+            console.log("mouse left");
             AttackZombie(zombie);
         }
         if(keyboard.space){
@@ -208,7 +219,6 @@ function update() {
         //spelare dör
         if (nearestPlayer.health == 0) {
             //om spelaren är levande, ta bort från levande listan
-            playSound("sounds\mixkit-arcade-retro-game-over-213.wav", 1);
             if (alive.length > 0) {
                 let index = alive.indexOf(nearestPlayer);
                 console.log(index);
@@ -226,6 +236,7 @@ function update() {
         //zombie dör
         if(zombie.health == 0){
             zombies.splice(zombies.indexOf(zombie));
+            score++; //
         }
 
     } //slut på zombie loop
@@ -333,20 +344,16 @@ function AttackPlayer(player, zombie) {
         }
     }
 }
-var shooter; //intervall som startar projectile funktionen
+
+var shooter = null; //intervall som startar projectile funktionen
+
 function AttackZombie(zombie) {
 
-    projectile.push({
-        x: players[0].x,
-        y: players[0].y,
-        width: 10,
-        height: 10,
-        time: 100,
-        color: "black"
-    });
-
     //du kan bara skjuta en åt gången
-    if (projectile.length == 1) {
+    if (shooter == null) {
+        projectile[0].x = players[0].x;
+        projectile[0].y = players[0].y;
+        console.log("shooter on");
 
         //variabler för att inte projektilen ska byta håll
         var X;
@@ -379,10 +386,8 @@ function AttackZombie(zombie) {
         }, 1); //kalla på projectile funktionen
 
         setTimeout(function() {
-            clearTimeout(shooter);
-            if(projectile.length > 0){ //om projektilen inte redan är borta
-                projectile.splice(0);
-            }
+            clearInterval(shooter);
+            shooter = null;
         }, 1000); //ta bort projektilen och stäng av shooter intervallet om 1sekund
     }
 }
@@ -394,11 +399,13 @@ function Projectile(X, Y) {
         projectile[0].y += Y;
 
     var shot = rectangle(projectile[0].x, projectile[0].y, projectile[0].width, projectile[0].height, projectile[0].color);
+    projectileHitBox[0][0] = projectile[0].x;
+    projectileHitBox[0][1] = projectile[0].y;
 
     //om projektilen är tillräckligt nära zombien -> ta skada
     for (let i = 0; i < zombies.length; i++) {
-
-        if (distance(projectile[0].x, projectile[0].y, zombies[i].x, zombies[i].y) < 25 && zombies[i].health > 0) {
+//distance(projectile[0].x, projectile[0].y, zombies[i].x, zombies[i].y) < 25 && zombies[i].health > 0
+        if (CollisionDetection(zombies[i], zombieHitBox, projectileHitBox) != -1) {
             zombies[i].health--;
                 
             if(zombies[i].health == 0){
@@ -408,7 +415,7 @@ function Projectile(X, Y) {
 
             if(projectile.length > 0){
                 clearTimeout(shooter);
-                projectile.splice(0); //ta bort projektiler
+                // projectile.splice(0); //ta bort projektiler
             }
 
             break; //om zombie är träffad, upprepa inte loopen (skottet träffar endast en zombie åt gången)
