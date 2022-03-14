@@ -7,24 +7,30 @@
 <body class="homepage">
     <div class="outer-container">
         <div class="header">
-            <h1>THE ESCAPIST</h1>
+            <h1>ZOMBIE SPELET</h1>
         </div>
         <div class="container">
-            <div class="menu">
+            <!-- <div class="menu"> -->
                 <a class="button" href="game.html" >Starta spel</a>
-                <div class="button" onclick="toggleHighscore()" title="click to toggle">Highscore
-                    <div id="toggleHighscore">
-                        <h1>Highscore:</h1>
-                        <p id="highscore1">-</p>
-                        <p id="highscore2">-</p>
-                        <p id="highscore3">-</p>
-                        <p id="highscore4">-</p>
-                        <p id="highscore5">-</p>
-                        <div class="button" title="click to toggle">Highscore</div>
-                    </div>
+                <div class="button" onclick="toggleHelp()" title="click to toggle">Hjälp</div>
+                <div id="toggleHelp" onclick="toggleHelp()">
+                    <h1>Hur det funkar:</h1>
+                    <p>Spelare 1 styrs med WASD, spelare 2 styrs med piltangenterna </p>
+                    <p>Spelare 1 har en skjutfunktion som styrs med musen och avfiras med vänsterklick</p>
+                    <p>Spelare 2 kan skada zombies genom att gå in i dem och slå med mellanslag</p>
+                    <p>Målet är att samla minst 8 poäng för att sedan ta sönder den bruna väggen och ta sig in till mål</p>
+                </div>
+                <div class="button" onclick="toggleHighscore()" title="click to toggle">Highscore</div>
+                <div id="toggleHighscore" onclick="toggleHighscore()">
+                    <h1>Highscore:</h1>
+                    <p id="highscore1">-</p>
+                    <p id="highscore2">-</p>
+                    <p id="highscore3">-</p>
+                    <p id="highscore4">-</p>
+                    <p id="highscore5">-</p>
                 </div>
             </div>
-        </div>
+        <!-- </div> -->
     </div>
 
 
@@ -42,6 +48,14 @@
         document.getElementById("highscore3").innerHTML = "3: " + localStorage.highscore2;
         document.getElementById("highscore4").innerHTML = "4: " + localStorage.highscore3;
         document.getElementById("highscore5").innerHTML = "5: " + localStorage.highscore4;
+    }
+    function toggleHelp(){
+        var element = document.getElementById("toggleHelp");
+        if(element.style.display === "none"){
+            element.style.display = "flex";
+        } else {
+            element.style.display = "none";
+        }
     }
 
     </script>

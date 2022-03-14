@@ -72,9 +72,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    max-width: 100%;
     width: 100%;
-    min-height: 50px;
-    max-height: 100px;
+    height: 70px;
     box-shadow: rgba(0, 247, 255, 0.616) 0px 7px 29px 0px;
     background-color: white;
     cursor: pointer;
@@ -88,18 +88,6 @@ body {
     background-color: rgba(87, 170, 238, 0.521);
 }
 
-.leave{
-    position: absolute;
-    bottom: 0;
-    width: 100px;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    height: 20px;
-    background-color: white;
-    margin: 5px;
-}
-
 #toggleHighscore {
     position: absolute;
     display: none;
@@ -110,15 +98,22 @@ body {
     align-items: center;
     flex-direction: column;
     box-shadow: rgba(0, 247, 255, 0.616) 0px 7px 29px 0px;
+    color:blue;
+}
+
+#toggleHelp{
+    display: none;
+    position: absolute;
+    height: auto;
+    width: 100%;
+    bottom: 0;
+    align-items: center;
+    flex-direction: column;
+    background-color: white;
+    box-shadow: rgba(0, 247, 255, 0.616) 0px 7px 29px 0px;
+    color:blue;
+
 }
 p{
     margin: 5px;
-}
-/* .button:active .highscore{
-    display: flex;
-} */
-
-/* animerad bakgrund */
-@keyframes background {
-
 }
