@@ -12,7 +12,6 @@
 <body class="game">
 
     <script src="simple.js">
-
         const map = [ //GÖR FLERA BANOR
             [200, 0, 50, 300],
             [500, totalHeight - 300, 50, 300],
@@ -47,7 +46,7 @@
         const goalWall = [
             [totalWidth - 330, totalHeight - 250, 50, 200]
         ];
-
+        var goalScore = 5;
         var goalWallHealth = 10;
 
         const winPoint = [
@@ -125,16 +124,26 @@
 
         }
 
-        var audio = new Audio('sounds/gamesound.mp3');
+        var backgroundAudio = new Audio('sounds/backgroundAudio.mp3');
+        var shootAudio = new Audio('sounds/shoot.mp3');
+        var hitAudio = new Audio('sounds/hit.mp3');
+        var missAudio = new Audio('sounds/miss.mp3');
+        var zombieHitAudio = new Audio('sounds/zombieHit.mp3');
+        var deathAudio = new Audio('sounds/deathSound.mp3');
+        var failAudio = new Audio('sounds/fail.mp3');
+        var winAudio = new Audio('sounds/win.mp3');
+        var coinAudio = new Audio('sounds/coinAudio.mp3');
+        var zombieSpawnAudio = new Audio('sounds/zombieSpawn.mp3');
 
         /*Huvudloopen*/
         function update() {
             clearScreen();
             //spela ljud
-            // audio.play(audio);
+            backgroundAudio.play();
+
 
             //level display
-            if (score < 8) {
+            if (score < goalScore) {
                 text(500, 70, 20, "SCORE: " + score, "red");
             } else {
                 text(500, 70, 20, "SCORE: " + score, "yellow");
@@ -154,6 +163,7 @@
 
             for (let i = 0; i < players.length; i++) {
                 if (CollisionDetection(players[i], playerHitBox, coinHitBox) != -1) {
+                    playAudio(coinAudio);
                     let index = CollisionDetection(players[i], playerHitBox, coinHitBox);
                     coinHitBox[index].splice(0, 4);
                     score++;
@@ -173,7 +183,6 @@
                 if (zombie.health > 0) {
                     rectangle(X, Y, width, height, "black");
                 }
-
                 if (zombie.health == 5) {
                     rectangle(X, Y, width, height, "red");
                 } else if (zombie.health == 4) {
@@ -203,37 +212,33 @@
                 } else if (alive.length == 1) { // bara en spelare är levande, attackera den
                     nearestPlayer = alive[0];
                 } else {
-                    alert("Both players are dead");
+                    //innebär att båda spelare är döda
+                    failAudio.play();
+                    alert("YOU LOST");
+                    stopUpdate();
                 }
+                //attackera närmsta spelare
+                AttackPlayer(nearestPlayer, zombie);
 
                 if (keyboard.space) {
                     player2Power(zombie);
                 }
 
-
-                //attackera närmsta spelare
-                AttackPlayer(nearestPlayer, zombie);
-
                 //skada
                 if (distance(nearestPlayer.x, nearestPlayer.y, zombie.x, zombie.y) < 5) {
+                    zombieHitAudio.play();
                     nearestPlayer.health -= 0.5;
                 }
 
                 //spelare dör
                 if (nearestPlayer.health == 0) {
-                    playSound('sounds/deathSound', 1);
+                    playAudio(deathAudio);
 
                     //om spelaren är levande, ta bort från levande listan
                     if (alive.length > 0) {
                         let index = alive.indexOf(nearestPlayer);
                         console.log(index);
                         alive.splice(index, 1);
-                    }
-
-                    //om båda spelare har dött (levande listans längd är noll)
-                    else if (alive.length == 0) {
-                        alert("YOU LOST!");
-                        stopUpdate();
                     }
                 }
 
@@ -248,12 +253,16 @@
             if (goalWallHealth <= 0) {
                 goalWall[0].splice(0);
             }
-            //vinnst 
+            //vinnst
             for (let i = 0; i < players.length; i++) {
                 if (CollisionDetection(players[i], playerHitBox, winPoint) != -1) {
-                    alert("YOU WON!");
+                    winAudio.play();
+                    backgroundAudio.pause();
                     addHighscore();
+                    setTimeout(function() {
+                    alert("DU VANN!");
                     stopUpdate();
+                    }, 500);
                 }
             }
         }
@@ -299,7 +308,7 @@
         //skapa spelare (grafiskt), index 0 eller 1
         function CreatePlayer(playerIndex) {
             Movement(playerIndex);
-            Health(playerIndex);
+            // Health(playerIndex);
 
 
             var i = playerIndex;
@@ -325,6 +334,26 @@
                 rectangle(X, Y, health * 2, height, "red");
             } else if (players[i].health > 0) {
                 rectangle(X, Y, health, height, "red");
+            }
+
+            text(0, 70, 20, "SPELARE 1:" + players[0].health, "red");
+            text(250, 70, 20, "SPELARE 2:" + players[1].health, "red");
+
+            //Healthbar
+            if (players[playerIndex].health >= 20) {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health1.png");
+            } else if (players[playerIndex].health >= 16) {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health2.png");
+            } else if (players[playerIndex].health >= 12) {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health3.png");
+            } else if (players[playerIndex].health >= 8) {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health4.png");
+            } else if (players[playerIndex].health >= 4) {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health5.png");
+            } else if (players[playerIndex].health > 0) {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health6.png");
+            } else {
+                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/healthDead.png");
             }
         }
 
@@ -359,11 +388,13 @@
         }
 
         var shooter = null; //intervall som startar projectile funktionen
-
         function AttackZombie() {
 
             //du kan bara skjuta en åt gången
             if (shooter == null) {
+
+                playAudio(shootAudio);
+
                 projectile[0].x = players[0].x;
                 projectile[0].y = players[0].y;
 
@@ -432,7 +463,7 @@
                     break; //om zombie är träffad, upprepa inte loopen (skottet träffar endast en zombie åt gången)
                 }
             }
-            if(score >= 8){ //kan skjuta sönder goal wall
+            if(score >= goalScore){ //kan skjuta sönder goal wall
                 if (CollisionDetection(null, projectileHitBox, goalWall) != -1) {
                 goalWallHealth--;
                 console.log("shot hit wall");
@@ -447,10 +478,16 @@
         //triggas av space knappen
         function player2Power(zombie) {
             if (timer1 == null) {
-                if (distance(players[1].x, players[1].y, zombie.x, zombie.y) < 25) {
+                if (distance(players[1].x, players[1].y, zombie.x, zombie.y) < 25) { //zombie träffad
+                    playAudio(hitAudio);
                     zombie.health--;
                     console.log("HIT");
                     text(zombie.x, zombie.y, 20, "POW", "black");
+                    timer1 = setTimeout(function () {
+                        timer1 = null;
+                    }, 800);
+                } else { //zombie miss
+                    playAudio(missAudio);
                     timer1 = setTimeout(function () {
                         timer1 = null;
                     }, 800);
@@ -463,7 +500,7 @@
         function powerUp() {
 
             //låses upp vid score 8
-            if (score >= 8) {
+            if (score >= goalScore) {
                 for (let i = 0; i < players.length; i++) {
                     if (CollisionDetection(players[i], playerHitBox, goalWall) != -1) {
 
@@ -549,9 +586,10 @@
         function SpawnZombies() {
             for (let i = 0; i < players.length; i++) {
                 if (CollisionDetection(players[i], playerHitBox, triggerPoints) != -1) {
+                    playAudio(zombieSpawnAudio);
                     console.log("stepped on triggerpoint");
                     let index = CollisionDetection(players[i], playerHitBox, triggerPoints);
-                    for (let s = 0; s < 1; s++) {
+                    for (let s = 0; s < 0; s++) {
                         zombies.push({
                             x: zombieSpawnPoints[index][0],
                             y: zombieSpawnPoints[index][1],
@@ -601,27 +639,12 @@
             return -1;
         }
 
-        function Health(playerIndex) {
-
-            text(0, 70, 20, "SPELARE 1:" + players[0].health, "red");
-            text(250, 70, 20, "SPELARE 2:" + players[1].health, "red");
-
-            if (players[playerIndex].health >= 20) {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health1.png");
-            } else if (players[playerIndex].health >= 16) {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health2.png");
-            } else if (players[playerIndex].health >= 12) {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health3.png");
-            } else if (players[playerIndex].health >= 8) {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health4.png");
-            } else if (players[playerIndex].health >= 4) {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health5.png");
-            } else if (players[playerIndex].health > 0) {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/health6.png");
-            } else {
-                picture(healthBar[playerIndex].x, healthBar[playerIndex].y, "img/healthDead.png");
+        function playAudio(audio){
+            if(audio.currentTime > 0){
+                audio.pause();
+                audio.currentTime = 0;
             }
-
+            audio.play();
         }
 
     </script>
