@@ -93,7 +93,7 @@ body {
     display: none;
     height: auto;
     width: 100%;
-    bottom: 0;
+    bottom: 70px;
     background-color: white;
     align-items: center;
     flex-direction: column;
@@ -106,7 +106,7 @@ body {
     position: absolute;
     height: auto;
     width: 100%;
-    bottom: 0;
+    bottom: 70px;
     align-items: center;
     flex-direction: column;
     background-color: white;
