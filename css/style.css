@@ -7,12 +7,14 @@ body {
     width: 100%;
     margin: 0px;
 }
+/*bakgrund index.html*/
 .homepage{
     background-image: url('/img/background3.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
 }
+/*bakgrund i game.html*/
 .game{
     background-image: url('/img/grassmap.jpg');
     background-repeat: no-repeat;
@@ -49,6 +51,7 @@ body {
     font-style: italic;
 }
 
+/*Glow animation på zombie spelet*/
 @-webkit-keyframes glow {
     from {
       text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #07f7ff, 0 0 40px #26c2dd, 0 0 50px #36f2ff, 0 0 60px #00ffff, 0 0 70px #21f3f3;
@@ -57,15 +60,6 @@ body {
       text-shadow: 0 0 20px #fff, 0 0 30px #11edfd, 0 0 40px #0cc6e7, 0 0 50px #02ffd5, 0 0 60px #00f7ff, 0 0 70px #24f8ff, 0 0 80px #00ffff;
     }
   }
-
-.menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    height: 100px;
-    width: 100%;
-}
 
 /* starta spel knapp */
 .button {
@@ -87,7 +81,7 @@ body {
 .button:hover{
     background-color: rgba(87, 170, 238, 0.521);
 }
-
+/*Highscore tab*/
 #toggleHighscore {
     position: absolute;
     display: none;
@@ -100,7 +94,7 @@ body {
     box-shadow: rgba(0, 247, 255, 0.616) 0px 7px 29px 0px;
     color:blue;
 }
-
+/*Hjälp tab*/
 #toggleHelp{
     display: none;
     position: absolute;
@@ -116,4 +110,19 @@ body {
 }
 p{
     margin: 5px;
+}
+#go-back{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    width: 100px;
+    z-index: 1000;
+}
+.home{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
 }
